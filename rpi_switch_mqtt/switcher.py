@@ -62,6 +62,7 @@ class Switcher:
                     self.mqtt_client.subscribe(switch_cfg['topic_set'], 0)
                 self.mqtt_client.loop_forever()
             except:
+                GPIO.cleanup()
                 self.error(traceback.format_exc())
                 self.mqtt_client = None
         else:
