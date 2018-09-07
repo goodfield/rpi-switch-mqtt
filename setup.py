@@ -10,7 +10,7 @@ with open('LICENSE') as f:
 
 setup(
     name='rpi-switch-mqtt',
-    version='0.0.1',
+    version='0.0.4',
     description='Use mqtt to control relays connected to raspberry',
     long_description=readme,
     author='David Uebelacker',

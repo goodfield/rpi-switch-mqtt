@@ -12,17 +12,24 @@ class Switch:
     gpio = None
     topic_status = None
 
-    def __init__(self, gpio, topic_status):
+    def __init__(self, gpio, topic_status, is_active_low=False):
         self.gpio = gpio
         self.topic_status = topic_status
+        self.is_active_low = is_active_low
         GPIO.setup(self.gpio, GPIO.OUT)
         self.off()
 
     def on(self):
-        GPIO.output(self.gpio, GPIO.HIGH)
+        if self.is_active_low:
+            GPIO.output(self.gpio, GPIO.LOW)
+        else:
+            GPIO.output(self.gpio, GPIO.HIGH)
 
     def off(self):
-        GPIO.output(self.gpio, GPIO.LOW)
+        if self.is_active_low:
+            GPIO.output(self.gpio, GPIO.HIGH)
+        else:
+            GPIO.output(self.gpio, GPIO.LOW)
 
 
 class Switcher:
@@ -34,7 +41,7 @@ class Switcher:
     def __init__(self, config):
         self.config = config
         for switch_cfg in self.config['switches']:
-            self.switches[switch_cfg['topic_set']] = Switch(int(switch_cfg['gpio']), switch_cfg['topic_status'])
+            self.switches[switch_cfg['topic_set']] = Switch(int(switch_cfg['gpio']), switch_cfg['topic_status'], switch_cfg.get('active_low', False))
 
     def verbose(self, message):
         if self.config and 'verbose' in self.config and self.config['verbose'] == 'true':
@@ -62,6 +69,7 @@ class Switcher:
                     self.mqtt_client.subscribe(switch_cfg['topic_set'], 0)
                 self.mqtt_client.loop_forever()
             except:
+                GPIO.cleanup()
                 self.error(traceback.format_exc())
                 self.mqtt_client = None
         else:
